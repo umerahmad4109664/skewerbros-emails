@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SKEWERBROS — Email Documentation</title>
+  <style>
+    :root {
+      --brand: #B31E23;
+      --brand-dark: #770D0F;
+      --bg: #FAECDF;
+      --sidebar-w: 320px;
+      --border: #e5e7eb;
+      --muted: #6b7280;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: #1f2937; display: flex; min-height: 100vh; }
+
+    .sidebar {
+      width: var(--sidebar-w); background: #fff; border-right: 1px solid var(--border);
+      position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; z-index: 10;
+    }
+    .sidebar-header {
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+      color: #fff; padding: 20px;
+    }
+    .sidebar-header h1 { font-size: 18px; letter-spacing: 1px; }
+    .sidebar-header p { font-size: 12px; opacity: .85; margin-top: 4px; }
+    .sidebar-header .doc-switch {
+      display: inline-block; margin-top: 10px; font-size: 12px; font-weight: 700;
+      color: #fff; text-decoration: none; background: rgba(255,255,255,.18);
+      padding: 5px 10px; border-radius: 6px; letter-spacing: .02em;
+    }
+    .sidebar-header .doc-switch:hover { background: rgba(255,255,255,.28); }
+    .search { padding: 12px; border-bottom: 1px solid var(--border); }
+    .search input {
+      width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px;
+    }
+    .group-label {
+      padding: 12px 16px 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .05em; color: var(--muted);
+    }
+    .nav-item {
+      display: block; padding: 10px 16px; font-size: 13px; color: #374151; text-decoration: none;
+      border-left: 3px solid transparent; cursor: pointer;
+    }
+    .nav-item:hover { background: #f9fafb; }
+    .nav-item.active { background: #fef2f2; border-left-color: var(--brand); color: var(--brand); font-weight: 600; }
+    .nav-item .badge {
+      display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; margin-left: 6px; font-weight: 600;
+    }
+    .badge-customer { background: #dbeafe; color: #1e40af; }
+    .badge-admin { background: #fef3c7; color: #92400e; }
+    .badge-scheduled { background: #ede9fe; color: #5b21b6; }
+
+    .main { margin-left: var(--sidebar-w); flex: 1; padding: 32px; max-width: 960px; }
+    .meta-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px;
+    }
+    .meta-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+    .meta-card label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 4px; }
+    .meta-card span { font-size: 14px; }
+    h2 { font-size: 24px; margin-bottom: 8px; }
+    .subject-line { color: var(--muted); font-size: 15px; margin-bottom: 24px; font-style: italic; }
+
+    .preview-wrap {
+      background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 24px;
+    }
+    .preview-toolbar {
+      background: #f9fafb; padding: 10px 16px; border-bottom: 1px solid var(--border);
+      font-size: 12px; color: var(--muted); display: flex; justify-content: space-between;
+    }
+    .preview-frame { width: 100%; border: none; min-height: 600px; background: var(--bg); }
+
+    .flow-section { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .flow-section h3 { margin-bottom: 12px; }
+    .sample-data { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; font-size: 13px; line-height: 1.7; color: var(--muted); }
+    .sample-data strong { color: #374151; }
+
+    @media (max-width: 768px) {
+      .sidebar { position: static; width: 100%; max-height: 40vh; }
+      .main { margin-left: 0; padding: 16px; }
+      body { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h1>SKEWERBROS</h1>
+    <p>Email Documentation · <span id="email-count"></span> emails</p>
+    <a class="doc-switch" href="./index.html">← QA DOCS</a>
+  </div>
+  <div class="search"><input type="text" id="search" placeholder="Search emails…"></div>
+  <div id="nav-list"></div>
+</nav>
+
+<main class="main" id="main">
+  <div id="email-detail">
+    <p style="color: var(--muted); padding-top: 40px;">Select an email from the sidebar to preview its content.</p>
+  </div>
+</main>
+
+<script>
+const SANS = "'HK Requisite', Helvetica, Arial, sans-serif";
+const SERIF = "'Hedvig Letters Serif', Georgia, 'Times New Roman', serif";
+const PAGE = '#FAECDF';
+const INK = '#1A1A1A';
+const BODY_COLOR = '#3C3C3C';
+const MUTED = '#6B6560';
+const LINE = 'rgba(26,26,26,0.12)';
+const BRAND = '#B31E23';
+const WORDMARK = '../public/email/skewerbros-wordmark.png';
+const BRAND_FOOTER = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:28px auto 0;max-width:600px;"><tr><td style="padding:8px 8px 0;font-family:${SERIF};font-size:22px;line-height:1.3;color:${INK};">Better protein starts with real food.</td></tr><tr><td style="padding:14px 8px 0;font-family:${SANS};font-size:14px;"><a href="#" style="color:${INK};text-decoration:underline;">Help centre</a>&nbsp;&nbsp;&nbsp;<a href="#" style="color:${INK};text-decoration:underline;">Reply to this email</a>&nbsp;&nbsp;&nbsp;<a href="#" style="color:${INK};text-decoration:underline;">Account</a></td></tr><tr><td style="padding:16px 8px 0;font-family:${SANS};font-size:13px;line-height:1.5;color:${MUTED};">SkewerBros · GTA &amp; surrounding areas<br>You're getting this because you have an active subscription.</td></tr></table>`;
+const SIMPLE_FOOTER = BRAND_FOOTER;
+const MANAGE_BTN = `<a href="#" style="display:inline-block;background:${BRAND};color:#fff;padding:14px 28px;border-radius:999px;text-decoration:none;font-weight:600;font-family:${SANS};">Manage Subscription →</a>`;
+
+function eyebrow(label) {
+  return `<p style="margin:0 0 14px;font-family:${SANS};font-size:14px;font-weight:600;color:${BRAND};">● ${label}</p>`;
+}
+function headline(text) {
+  return `<h1 style="margin:0 0 16px;font-family:${SERIF};font-size:32px;line-height:1.2;font-weight:400;color:${INK};">${text}</h1>`;
+}
+function splitRows(rows) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:4px 0 8px;">${rows.map((row) => {
+    const weight = row.emphasize ? '700' : '400';
+    const valueColor = row.value === 'None' || row.value === 'No Fiber' || row.value === 'No Carbs' ? MUTED : INK;
+    return `<tr><td style="padding:14px 12px 14px 0;border-bottom:1px solid ${LINE};font-family:${SANS};font-size:16px;font-weight:${weight};color:${INK};">${row.label}</td><td align="right" style="padding:14px 0;border-bottom:1px solid ${LINE};font-family:${SANS};font-size:16px;font-weight:${weight};color:${valueColor};">${row.value}</td></tr>`;
+  }).join('')}</table>`;
+}
+function flavorRows(source) {
+  const lines = String(source).split(/<br\s*\/?>|,\s*/i).map((line) => line.replace(/&bull;\s*/g, '').trim()).filter(Boolean);
+  return splitRows(lines.map((line) => {
+    const qtyFirst = line.match(/^(\d+)\s+x\s+(.+)$/i);
+    if (qtyFirst) return { label: qtyFirst[2], value: `× ${qtyFirst[1]}`, emphasize: true };
+    const nameFirst = line.match(/^(.+?)\s+x\s*(\d+)$/i);
+    if (nameFirst) return { label: nameFirst[1].replace(/,$/, ''), value: `× ${nameFirst[2]}`, emphasize: true };
+    return { label: line, value: '', emphasize: true };
+  }));
+}
+function sectionLabel(text) {
+  return `<p style="margin:20px 0 0;font-family:${SANS};font-size:14px;color:${MUTED};">${text}</p>`;
+}
+function alertBox(html) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;background:#FFF3CC;border:1px solid #F8D868;border-radius:12px;"><tr><td style="padding:18px 20px;font-family:${SANS};font-size:15px;line-height:1.5;color:${INK};">${html}</td></tr></table>`;
+}
+
+const S = {
+  firstName: 'Alex',
+  fullName: 'Alex Smith',
+  email: 'alex@example.com',
+  phone: '416-555-0100',
+  company: 'Acme Corp',
+  address: '123 King St W',
+  unit: 'Unit 501',
+  postal: 'M5H 1A1',
+  fullAddress: '123 King St W, Unit 501, M5H 1A1',
+  newFullAddress: '456 Queen St E, Unit 302, M5A 1T1',
+  buzzer: '501',
+  instructions: 'Leave at concierge desk. Text when you arrive.',
+  deliveryDate: 'Monday, March 10, 2026',
+  deliveryDateShort: 'Monday, March 10',
+  deliveryDateTime: 'Monday, March 10 · 5:30–10:30 PM',
+  deliveryTime: '5:30 PM – 10:30 PM',
+  meals: 10,
+  chickenBreasts: '10 x 9oz chicken breasts',
+  proteinLine: '10 meals · 700g+ protein',
+  chickenLine: '1 x 9oz chicken breast',
+  flavorsHtml: '4 x Lemon Herb<br>3 x Shawarma<br>3 x Buffalo',
+  flavorsBullets: '&bull; 4 x Lemon Herb<br>&bull; 3 x Shawarma<br>&bull; 3 x Buffalo',
+  flavorsInline: '4 x Lemon Herb, 3 x Shawarma, 3 x Buffalo',
+  flavorsAdmin: 'Lemon Herb x4, Shawarma x3, Buffalo x3',
+  dips: '2 x Garlic, 1 x Tahini',
+  side: 'Garlic Rice',
+  fiber: 'No Fiber',
+  pitaCustomer: 'Add 1 pack pita (6 pieces, whole wheat)',
+  pitaLabel: '1 pack (6 pieces, whole wheat)',
+  pitaAdmin: '1 pack whole wheat (6 pieces)',
+  stripeSub: 'sub_1ABC123xyz',
+  invoice: 'in_1ABC123xyz',
+  totalHst: '$144.64',
+  totalPreTax: '$128.00',
+  mealsPrice: '$95.00',
+  pitaPrice: '$5.00',
+  dipsPrice: '$8.00',
+  sidePrice: '$20.00',
+  fiberPrice: '$0.00',
+  deliveryFee: '$15.00',
+  totalPreTaxWithDelivery: '$143.00',
+  totalHstWithDelivery: '$161.59',
+  billingPeriod: 'March 5, 2026 - March 12, 2026',
+  nextBilling: 'Wednesday, March 12, 2026 at 11:59 PM',
+  flavorCutoff: 'Thursday, March 13, 2026 at 11:59 PM',
+  mealOrderCutoff: 'Sunday 3:00 PM ET',
+  recordedAt: 'March 5, 2026, 10:00 AM',
+};
+
+function customerOrderBlock(planLabel) {
+  return `
+      ${sectionLabel('YOUR ORDER')}
+      ${splitRows([
+        { label: 'Plan', value: planLabel },
+        { label: 'Meals', value: S.proteinLine },
+        { label: 'Chicken', value: S.chickenLine },
+      ])}
+      ${sectionLabel('Flavors')}
+      ${flavorRows(S.flavorsHtml)}
+      ${splitRows([
+        { label: 'Pita', value: S.pitaLabel },
+        { label: 'Dips', value: S.dips },
+        { label: 'Side', value: S.side },
+        { label: 'Fiber', value: S.fiber },
+      ])}`;
+}
+
+function customerDeliveryBlock() {
+  return `
+      ${sectionLabel('Delivery')}
+      ${splitRows([
+        { label: 'Date & time', value: S.deliveryDateTime },
+        { label: 'Address', value: `${S.address}, ${S.unit}, ${S.postal}` },
+        { label: 'Buzzer', value: S.buzzer },
+        { label: 'Instructions', value: S.instructions },
+      ])}`;
+}
+
+function adminPricingRows(includeDelivery) {
+  const deliveryRow = includeDelivery
+    ? `<tr><td style="padding:8px 0;color:#6b7280;">Delivery</td><td style="padding:8px 0;font-weight:600;">${S.deliveryFee}</td></tr>`
+    : '';
+  return `
+                <tr><td style="padding:8px 0;color:#6b7280;">Meals</td><td style="padding:8px 0;font-weight:600;">${S.mealsPrice}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Pita</td><td style="padding:8px 0;font-weight:600;">${S.pitaPrice}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Dips</td><td style="padding:8px 0;font-weight:600;">${S.dipsPrice}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Side</td><td style="padding:8px 0;font-weight:600;">${S.sidePrice}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Fiber</td><td style="padding:8px 0;font-weight:600;">${S.fiberPrice}</td></tr>${deliveryRow}
+                <tr><td style="padding:8px 0;color:#6b7280;">Total (pre-tax)</td><td style="padding:8px 0;font-weight:600;">${includeDelivery ? S.totalPreTaxWithDelivery : S.totalPreTax}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Total (with HST)</td><td style="padding:8px 0;font-weight:600;">${includeDelivery ? S.totalHstWithDelivery : S.totalHst}</td></tr>
+                <tr><td colspan="2" style="padding:8px 0 0;font-size:12px;color:#9ca3af;font-style:italic;">Pre-tax subtotals. HST (13%) added at billing. Empty Side/Fiber show as $0.00.</td></tr>`;
+}
+
+function adminOrderTable(includeDelivery) {
+  return `
+              <h3 style="color:#374151;">Order Details</h3>
+              <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+                <tr><td style="padding:8px 0;color:#6b7280;width:120px;">Meals</td><td style="padding:8px 0;font-weight:600;">${S.meals} meals (${S.chickenBreasts})</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;vertical-align:top;">Flavor</td><td style="padding:8px 0;font-weight:600;">${S.flavorsAdmin}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Dips</td><td style="padding:8px 0;font-weight:600;">${S.dips}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Side</td><td style="padding:8px 0;font-weight:600;">${S.side}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Fiber</td><td style="padding:8px 0;font-weight:600;">${S.fiber}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Pita add-on</td><td style="padding:8px 0;font-weight:600;">${S.pitaAdmin}</td></tr>
+                ${adminPricingRows(includeDelivery)}
+              </table>`;
+}
+
+function adminDeliveryTable() {
+  return `
+              <h3 style="color:#374151;">Delivery Details</h3>
+              <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+                <tr><td style="padding:8px 0;color:#6b7280;width:120px;">Address</td><td style="padding:8px 0;font-weight:600;">${S.fullAddress}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Date</td><td style="padding:8px 0;">${S.deliveryDate}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Time</td><td style="padding:8px 0;">${S.deliveryTime}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Buzzer Code</td><td style="padding:8px 0;font-weight:600;">${S.buzzer}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;vertical-align:top;">Instructions</td><td style="padding:8px 0;color:#92400e;background:#fef3c7;padding:8px;border-radius:4px;">${S.instructions}</td></tr>
+              </table>`;
+}
+
+function adminCustomerTable(includePhone) {
+  const phoneRow = includePhone
+    ? `<tr><td style="padding:8px 0;color:#6b7280;">Phone</td><td style="padding:8px 0;"><a href="tel:${S.phone}" style="color:#B31E23;">${S.phone}</a></td></tr>`
+    : '';
+  return `
+              <h3 style="color:#374151;margin-top:0;">Customer Details</h3>
+              <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+                <tr><td style="padding:8px 0;color:#6b7280;width:140px;">Name</td><td style="padding:8px 0;font-weight:600;">${S.fullName}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Email</td><td style="padding:8px 0;"><a href="mailto:${S.email}" style="color:#B31E23;">${S.email}</a></td></tr>${phoneRow}
+              </table>`;
+}
+
+function adminShell(_headerColor, title, alertHtml, bodyHtml, footerText) {
+  const note = footerText ? `<p style="margin:16px 0 0;font-family:${SANS};font-size:14px;color:${MUTED};">${footerText}</p>` : '';
+  return shell(`${alertHtml || ''}${bodyHtml}<div style="margin-top:20px;">${MANAGE_BTN.replace('Manage Subscription →', 'View in Admin Panel')}</div>${note}`, { headline: title });
+}
+
+function planUpdatedBody(appliesTo, meals, flavorsInline, pita, dips, nextCharge, side, fiber) {
+  return `
+      <p style="margin:0 0 16px;">Your meal plan has been successfully updated.</p>
+      <p style="margin:0 0 16px;"><strong>Applies to:</strong><br>${appliesTo}</p>
+      ${sectionLabel('Your box')}
+      ${flavorRows(flavorsInline)}
+      ${splitRows([
+        { label: 'Meals', value: meals },
+        { label: 'Pita', value: pita },
+        { label: 'Dips', value: dips },
+        { label: 'Side', value: side ?? S.side },
+        { label: 'Fiber', value: fiber ?? S.fiber },
+        { label: 'Next Charge', value: nextCharge },
+      ])}
+      <div style="margin-top:16px;">${MANAGE_BTN}</div>`;
+}
+
+function preBillingOrderSummary() {
+  return `
+      ${sectionLabel('Your box')}
+      ${flavorRows(S.flavorsBullets)}
+      ${splitRows([
+        { label: 'Meals', value: '10 meals' },
+        { label: 'Pita', value: '1 pack' },
+        { label: 'Additional Dips', value: S.dips },
+        { label: 'Side', value: S.side },
+        { label: 'Fiber', value: S.fiber },
+        { label: 'Next Charge', value: `${S.nextBilling} — ${S.totalHst}` },
+      ])}`;
+}
+
+function totalRow(label, value) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 20px;"><tr><td style="padding:16px 0 0;font-family:${SANS};font-size:16px;color:${INK};">${label}</td><td align="right" style="padding:16px 0 0;font-family:${SERIF};font-size:28px;line-height:1;color:${INK};">${value}</td></tr></table>`;
+}
+function shell(body, opts) {
+  const eye = opts && opts.eyebrow ? eyebrow(opts.eyebrow) : '';
+  const title = opts && opts.headline ? headline(opts.headline) : '';
+  const slot = eye || title ? '' : '<!--CHROME-->';
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:${PAGE};font-family:${SANS};"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${PAGE};"><tr><td align="center" style="padding:48px 16px;"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:16px;"><tr><td align="center" style="padding:32px 24px 28px;border-bottom:1px solid ${LINE};"><img src="${WORDMARK}" width="220" alt="SKEWERBROS" style="display:block;margin:0 auto;border:0;width:220px;height:auto;"></td></tr><tr><td style="padding:32px 40px 36px;font-family:${SANS};color:${BODY_COLOR};font-size:16px;line-height:1.55;">${eye}${title}${slot}${body}</td></tr></table>${BRAND_FOOTER}</td></tr></table></body></html>`;
+}
+function adminCancelledBody(isImmediate, lastActiveDate) {
+  const type = isImmediate ? 'Immediate Cancellation' : 'End of Period';
+  const lastActive = isImmediate ? 'Already cancelled' : lastActiveDate;
+  const headerColor = isImmediate ? '#ef4444' : '#f59e0b';
+  return `${adminCustomerTable(false)}
+              <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+                <tr><td style="padding:8px 0;color:#6b7280;width:140px;">Plan</td><td style="padding:8px 0;">${S.meals} Meals/Week</td></tr>
+              </table>
+              <h3 style="color:#374151;">Cancellation Details</h3>
+              <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+                <tr><td style="padding:8px 0;color:#6b7280;width:140px;">Type</td><td style="padding:8px 0;color:${headerColor};font-weight:700;">${type}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Last Active Date</td><td style="padding:8px 0;font-weight:600;">${lastActive}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Subscription ID</td><td style="padding:8px 0;color:#6b7280;font-size:12px;">${S.stripeSub}</td></tr>
+              </table>`;
+}
+
+function adminPaymentFailedBody() {
+  return `<table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+                <tr><td style="padding:8px 0;color:#6b7280;width:140px;">Customer</td><td style="padding:8px 0;font-weight:600;">${S.fullName}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Email</td><td style="padding:8px 0;"><a href="mailto:${S.email}" style="color:#B31E23;">${S.email}</a></td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Meals/week</td><td style="padding:8px 0;">${S.meals}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Failure reason</td><td style="padding:8px 0;">Your card was declined.</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Invoice</td><td style="padding:8px 0;color:#6b7280;font-size:12px;">${S.invoice}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Stripe Sub</td><td style="padding:8px 0;color:#6b7280;font-size:12px;">${S.stripeSub}</td></tr>
+              </table>`;
+}
+
+function adminRenewalBody() {
+  return `${adminCustomerTable(false)}
+              <h3 style="color:#374151;">Billing Details</h3>
+              <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+                <tr><td style="padding:8px 0;color:#6b7280;width:140px;">Plan</td><td style="padding:8px 0;font-weight:600;">${S.meals} Meals/Week — ${S.flavorsAdmin}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Pita</td><td style="padding:8px 0;font-weight:600;">${S.pitaAdmin}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Dips</td><td style="padding:8px 0;font-weight:600;">${S.dips}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Side</td><td style="padding:8px 0;font-weight:600;">${S.side}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Fiber</td><td style="padding:8px 0;font-weight:600;">${S.fiber}</td></tr>
+                ${adminPricingRows(false)}
+                <tr><td style="padding:8px 0;color:#6b7280;">Billing Period</td><td style="padding:8px 0;">${S.billingPeriod}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Next Renewal</td><td style="padding:8px 0;">${S.nextBilling}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Subscription ID</td><td style="padding:8px 0;color:#6b7280;font-size:12px;">${S.stripeSub}</td></tr>
+              </table>`;
+}
+
+function shellSimple(body) {
+  return shell(body).replace(BRAND_FOOTER, SIMPLE_FOOTER);
+}
+
+const EMAILS = [
+  {
+    id: 'order-confirmation',
+    group: 'Checkout & Orders',
+    name: 'Order Confirmation',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Your Protein is Locked In.',
+    trigger: 'Subscription first payment (paymentKind first_signup) or one-time checkout completed',
+    source: 'lib/email.ts → sendOrderConfirmationEmail',
+    html: shell(`
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin-top:0;">Hi ${S.firstName},</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">Thanks for trusting us with your protein goals. We'll take it from here.</p>
+      ${customerOrderBlock('Weekly Subscription')}
+      ${customerDeliveryBlock()}
+      <p style="color:#4b5563;font-size:14px;line-height:1.6;">Questions? Just reply to this email or reach out to us at support@skewerbros.com. We're here.</p>
+      <div style="margin-top:24px;padding-top:24px;border-top:1px solid #e5e7eb;">${MANAGE_BTN}</div>
+    `),
+  },
+  {
+    id: 'order-confirmation-onetime',
+    group: 'Checkout & Orders',
+    name: 'Order Confirmation (One-Time)',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Your Protein is Locked In.',
+    trigger: 'One-time checkout completed (same template, plan label differs)',
+    source: 'lib/email.ts → sendOrderConfirmationEmail (orderType: onetime)',
+    html: shell(`
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin-top:0;">Hi ${S.firstName},</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">Thanks for trusting us with your protein goals. We'll take it from here.</p>
+      ${customerOrderBlock('One-time')}
+      ${customerDeliveryBlock()}
+      <p style="color:#4b5563;font-size:14px;line-height:1.6;">Questions? Just reply to this email or reach out to us at support@skewerbros.com. We're here.</p>
+    `),
+  },
+  {
+    id: 'admin-new-order',
+    group: 'Checkout & Orders',
+    name: 'Admin New Order (Subscription)',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `New Order: ${S.meals} Meals - ${S.fullName}`,
+    trigger: 'Subscription order paid — admin notification',
+    source: 'lib/email.ts → sendAdminNewOrderEmail',
+    html: adminShell('#6D221D', 'New Order Received', `<div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;margin-bottom:20px;"><p style="margin:0;color:#92400e;font-weight:600;">New Weekly Subscription</p></div>`, `${adminCustomerTable(true)}${adminOrderTable(false)}${adminDeliveryTable()}`, `Order received at ${S.recordedAt}`),
+  },
+  {
+    id: 'admin-new-order-onetime',
+    group: 'Checkout & Orders',
+    name: 'Admin New Order (One-Time)',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `New Order: ${S.meals} Meals - ${S.fullName}`,
+    trigger: 'One-time order paid — admin notification (includes delivery fee)',
+    source: 'lib/email.ts → sendAdminNewOrderEmail (orderType: onetime)',
+    html: adminShell('#6D221D', 'New Order Received', `<div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;margin-bottom:20px;"><p style="margin:0;color:#92400e;font-weight:600;">One-Time Order</p></div>`, `${adminCustomerTable(true)}${adminOrderTable(true)}${adminDeliveryTable()}`, `Order received at ${S.recordedAt}`),
+  },
+  {
+    id: 'cart-abandonment',
+    group: 'Checkout & Orders',
+    name: 'Cart Abandonment',
+    audience: 'customer',
+    timing: 'scheduled',
+    subject: 'Better Protein starts here.',
+    trigger: 'Payment intent created at checkout, not completed — sent 2 hours later',
+    source: 'lib/email-templates/cart-abandonment-payment-intent.ts',
+    html: shellSimple(`
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">We just wanted to check in and see if you had any questions or hesitations while exploring SkewerBros for your protein goals this week.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">If there was anything unclear or something holding you back, we'd genuinely love the feedback - we're just getting started and every bit of constructive criticism helps us improve!</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">And if you'd prefer to try the chicken breasts before committing to a subscription, we'd be more than thrilled to send over a sample this week, just let us know!</p>
+    `),
+  },
+  {
+    id: 'verification-code',
+    group: 'Authentication',
+    name: 'Verification Code',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Your SKEWERBROS Verification Code: 482910',
+    trigger: 'Customer requests login code at /manage',
+    source: 'lib/email.ts → sendVerificationCodeEmail',
+    html: shell(`
+      <p style="margin:0 0 16px;">Use the code below to access your subscription dashboard:</p>
+      ${alertBox('<p style="margin:0;text-align:center;font-family:' + SERIF + ';font-size:36px;letter-spacing:8px;">482910</p>')}
+      <p style="margin:0;font-size:14px;color:' + MUTED + ';">This code expires in 10 minutes.<br>If you didn\'t request this code, please ignore this email.</p>
+    `),
+  },
+  {
+    id: 'subscription-paused',
+    group: 'Subscription Lifecycle',
+    name: 'Subscription Paused',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Your subscription has been paused',
+    trigger: 'Customer pauses subscription from /manage',
+    source: 'lib/email-templates/subscription-paused.ts',
+    html: shellSimple(`
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Hi ${S.firstName},</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Your subscription has been paused for <strong>2 weeks</strong>.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Your next fulfilment is scheduled for <strong>March 17th</strong>.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Your subscription will automatically resume on <strong>${S.nextBilling}</strong>.</p>
+      <div style="margin:24px 0;">${MANAGE_BTN}</div>
+      <p style="color:#9ca3af;font-size:14px;margin:0;">Questions? Email us at support@skewerbros.com</p>
+    `),
+  },
+  {
+    id: 'subscription-paused-indefinite',
+    group: 'Subscription Lifecycle',
+    name: 'Subscription Paused (No Return Date)',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Your subscription has been paused',
+    trigger: 'Customer pauses without scheduling a return date',
+    source: 'lib/email-templates/subscription-paused.ts (no resumeAtUnix)',
+    html: shellSimple(`
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Hi ${S.firstName},</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Your subscription has been paused.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">You can resume your subscription at any time from your account.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Your subscription will remain paused until you choose to resume it.</p>
+      <div style="margin:24px 0;">${MANAGE_BTN}</div>
+      <p style="color:#9ca3af;font-size:14px;margin:0;">Questions? Email us at support@skewerbros.com</p>
+    `),
+  },
+  {
+    id: 'admin-paused',
+    group: 'Subscription Lifecycle',
+    name: 'Admin — Subscription Paused',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `Subscription Paused: ${S.fullName}`,
+    trigger: 'Same pause action — admin notification',
+    source: 'lib/email.ts → sendAdminSubscriptionPausedEmail',
+    html: adminShell('#f59e0b', 'Subscription Paused', `<div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;margin-bottom:20px;"><p style="margin:0;color:#92400e;font-weight:600;">Customer has paused their subscription</p></div>`, `${adminCustomerTable(false)}<h3 style="color:#374151;">Pause Details</h3><table style="width:100%;border-collapse:collapse;margin-bottom:20px;"><tr><td style="padding:8px 0;color:#6b7280;width:140px;">Pause Behavior</td><td style="padding:8px 0;font-weight:600;">Scheduled resume</td></tr><tr><td style="padding:8px 0;color:#6b7280;">Paused Since</td><td style="padding:8px 0;">March 1, 2026</td></tr><tr><td style="padding:8px 0;color:#6b7280;">Scheduled Resume</td><td style="padding:8px 0;color:#f59e0b;font-weight:600;">Wednesday, March 12, 2026 at 11:59 PM</td></tr><tr><td style="padding:8px 0;color:#6b7280;">Subscription ID</td><td style="padding:8px 0;color:#6b7280;font-size:12px;">${S.stripeSub}</td></tr></table>`, `Pause recorded at ${S.recordedAt}`),
+  },
+  {
+    id: 'pause-extended',
+    group: 'Subscription Lifecycle',
+    name: 'Return Date Updated',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Your return date has been updated.',
+    trigger: 'Customer extends/changes pause return date',
+    source: 'lib/email.ts → sendSubscriptionStatusEmail (pause_extended)',
+    html: shellSimple(`
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">Hi ${S.firstName},</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:16px;">Your subscription is scheduled to resume on</p>
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin-bottom:16px;font-weight:600;">Wednesday November 25th, 2026 at 11:59 PM</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:16px;">Your subscription will remain paused until then.<br>You can change this anytime from your dashboard.</p>
+      <div style="margin-top:24px;">${MANAGE_BTN}</div>
+    `),
+  },
+  {
+    id: 'admin-pause-rescheduled',
+    group: 'Subscription Lifecycle',
+    name: 'Admin — Pause Rescheduled',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `Pause Resume Date Changed: ${S.fullName}`,
+    trigger: 'Customer extends pause return date',
+    source: 'lib/email-templates/admin-subscription-pause-rescheduled.ts',
+    html: adminShell('#f59e0b', 'Pause Resume Date Changed', `<div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;margin-bottom:20px;"><p style="margin:0;color:#92400e;font-weight:600;">Customer rescheduled their pause return date</p></div>`, `${adminCustomerTable(false)}<h3 style="color:#374151;">Resume Date Change</h3><table style="width:100%;border-collapse:collapse;margin-bottom:20px;"><tr><td style="padding:8px 0;color:#6b7280;width:140px;">Previous Resume</td><td style="padding:8px 0;color:#6b7280;">Wednesday, March 12, 2026 at 11:59 PM</td></tr><tr><td style="padding:8px 0;color:#6b7280;">New Resume</td><td style="padding:8px 0;color:#f59e0b;font-weight:600;">Wednesday, March 19, 2026 at 11:59 PM</td></tr><tr><td style="padding:8px 0;color:#6b7280;">Subscription ID</td><td style="padding:8px 0;color:#6b7280;font-size:12px;">${S.stripeSub}</td></tr></table>`, `Change recorded at ${S.recordedAt}`),
+  },
+  {
+    id: 'subscription-resumed',
+    group: 'Subscription Lifecycle',
+    name: 'Subscription Resumed — before billing trigger',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Your subscription has been resumed',
+    trigger: 'Customer resumes before the billing trigger (charged when billing runs)',
+    source: 'lib/email-templates/subscription-resumed.ts',
+    html: shellSimple(`
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Hi ${S.firstName},</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Your subscription has been resumed.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Your next delivery is scheduled for <strong>${S.deliveryDateShort}</strong>.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Your next billing date is <strong>${S.nextBilling}</strong>.</p>
+      <div style="margin:24px 0;">${MANAGE_BTN}</div>
+    `),
+  },
+  {
+    id: 'subscription-resumed-after-trigger',
+    group: 'Subscription Lifecycle',
+    name: 'Subscription Resumed — after billing trigger',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Your subscription has been resumed',
+    trigger: 'Customer resumes after the billing trigger (charged on the spot)',
+    source: 'lib/email-templates/subscription-resumed.ts',
+    html: shellSimple(`
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Hi ${S.firstName},</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Your subscription has been resumed.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Your next delivery is scheduled for <strong>${S.deliveryDateShort}</strong>.</p>
+      <div style="margin:24px 0;">${MANAGE_BTN}</div>
+    `),
+  },
+  {
+    id: 'admin-resumed',
+    group: 'Subscription Lifecycle',
+    name: 'Admin — Subscription Resumed',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `Subscription Resumed: ${S.fullName}`,
+    trigger: 'Customer resumes subscription',
+    source: 'lib/email.ts → sendAdminSubscriptionResumedEmail',
+    html: adminShell('#22c55e', 'Subscription Resumed', `<div style="background:#dcfce7;border-left:4px solid #22c55e;padding:12px 16px;margin-bottom:20px;"><p style="margin:0;color:#166534;font-weight:600;">Customer has resumed their subscription</p></div>`, `${adminCustomerTable(false)}<h3 style="color:#374151;">Resume Details</h3><table style="width:100%;border-collapse:collapse;margin-bottom:20px;"><tr><td style="padding:8px 0;color:#6b7280;width:140px;">Resumed On</td><td style="padding:8px 0;font-weight:600;">March 5, 2026, 2:30 PM</td></tr><tr><td style="padding:8px 0;color:#6b7280;">Subscription ID</td><td style="padding:8px 0;color:#6b7280;font-size:12px;">${S.stripeSub}</td></tr></table>`, `Resume recorded at March 5, 2026, 2:30 PM`),
+  },
+  {
+    id: 'subscription-cancelled',
+    group: 'Subscription Lifecycle',
+    name: 'Subscription Cancelled',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Your subscription has been cancelled',
+    trigger: 'Customer cancels subscription',
+    source: 'lib/email-templates/subscription-cancelled.ts',
+    html: shellSimple(`
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Hi ${S.firstName},</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Your subscription has been cancelled.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">We know routines change, whether that's travel, a change in schedule, or simply taking a break.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">At Skewerbros, our mission is to make clean, high-quality protein enjoyable, affordable, and accessible to all.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">If there was anything we could have done better, we'd genuinely appreciate your feedback.</p>
+      <div style="margin:24px 0;">${MANAGE_BTN}</div>
+    `),
+  },
+  {
+    id: 'admin-cancelled',
+    group: 'Subscription Lifecycle',
+    name: 'Admin — Subscription Cancelled (Immediate)',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `Subscription Cancelled: ${S.fullName} - IMMEDIATE`,
+    trigger: 'Stripe cancel webhook — immediate cancellation',
+    source: 'lib/email.ts → sendAdminSubscriptionCancelledEmail',
+    note: 'Admin copy says STOP fulfillment now. Product still fulfills an already-paid upcoming Monday — verify kitchen/weekly-orders against paid week, not this banner alone.',
+    html: adminShell('#ef4444', 'Subscription Cancelled', `<div style="background:#fee2e2;border-left:4px solid #ef4444;padding:12px 16px;margin-bottom:20px;"><p style="margin:0;color:#991b1b;font-weight:600;">Subscription cancelled immediately - STOP fulfillment now</p></div>`, adminCancelledBody(true), `Cancellation recorded at ${S.recordedAt}`),
+  },
+  {
+    id: 'admin-cancelled-scheduled',
+    group: 'Subscription Lifecycle',
+    name: 'Admin — Cancellation Scheduled',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `Subscription Cancellation Scheduled: ${S.fullName}`,
+    trigger: 'Stripe cancel webhook — end-of-period cancellation',
+    source: 'lib/email.ts → sendAdminSubscriptionCancelledEmail',
+    html: adminShell('#f59e0b', 'Cancellation Scheduled', `<div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;margin-bottom:20px;"><p style="margin:0;color:#92400e;font-weight:600;">Subscription scheduled for cancellation - continue fulfillment until last active date</p></div>`, adminCancelledBody(false, S.deliveryDate), `Cancellation recorded at ${S.recordedAt}`),
+  },
+  {
+    id: 'welcome-back',
+    group: 'Subscription Lifecycle',
+    name: 'Welcome Back (Reactivated)',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Welcome back!',
+    trigger: 'Subscription payment classified as reactivation (cancelled renew or returning customer)',
+    source: 'lib/email.ts → sendSubscriptionStatusEmail (reactivated)',
+    html: shellSimple(`
+      <p style="margin:0 0 16px;">Hi ${S.firstName},</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:16px;">Welcome back. We're glad to have you.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:16px;">Everything stays the same on our end: Real Food. Real Protein.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:8px;">65G+ protein per meal.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:8px;">No seed oils. No refined sugars.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:16px;">Your subscription is active again and ready to go. You can review or adjust flavours anytime in your dashboard.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:16px;">Your next delivery will be on ${S.deliveryDateTime}.</p>
+      <p style="color:#1f2937;font-size:16px;font-weight:600;margin-top:24px;">Welcome back to real protein.</p>
+      ${customerOrderBlock('Weekly Subscription')}
+      ${customerDeliveryBlock()}
+      <div style="margin-top:24px;">${MANAGE_BTN}</div>
+    `),
+  },
+  {
+    id: 'admin-reactivated',
+    group: 'Subscription Lifecycle',
+    name: 'Admin — Subscription Reactivated',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `Subscription Reactivated: ${S.fullName}`,
+    trigger: 'Same reactivation payment as Welcome Back (paymentKind reactivation)',
+    source: 'lib/email.ts → sendAdminSubscriptionReactivatedEmail',
+    html: adminShell('#22c55e', 'Subscription Reactivated', `<div style="background:#dcfce7;border-left:4px solid #22c55e;padding:12px 16px;margin-bottom:20px;"><p style="margin:0;color:#166534;font-weight:600;">Customer has reactivated their subscription</p></div>`, `${adminCustomerTable(true)}<h3 style="color:#374151;">Reactivation Details</h3><table style="width:100%;border-collapse:collapse;margin-bottom:20px;"><tr><td style="padding:8px 0;color:#6b7280;width:140px;">Reactivated On</td><td style="padding:8px 0;font-weight:600;">Monday, March 3, 2026</td></tr><tr><td style="padding:8px 0;color:#6b7280;">Subscription ID</td><td style="padding:8px 0;color:#6b7280;font-size:12px;">${S.stripeSub}</td></tr></table>${adminOrderTable(false)}${adminDeliveryTable()}`, `Reactivation recorded at March 3, 2026, 11:00 AM`),
+  },
+  {
+    id: 'renewal-confirmed',
+    group: 'Billing & Renewals',
+    name: 'Renewal Confirmed',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Your order is confirmed',
+    trigger: 'Active subscriber weekly cycle only (paymentKind weekly_renewal — not first signup or reactivation)',
+    source: 'lib/email-templates/subscription-renewal-confirmed.ts',
+    html: shellSimple(`
+      <p style="margin:0 0 16px;">Hi ${S.firstName},</p>
+      <p style="margin:0 0 16px;">Your subscription has renewed successfully.</p>
+      <p style="margin:0 0 8px;">Your order for <strong>${S.deliveryDateShort}</strong> is confirmed.</p>
+      ${sectionLabel('Your box')}
+      ${flavorRows(S.flavorsHtml)}
+      ${splitRows([
+        { label: 'Pita', value: S.pitaLabel },
+        { label: 'Dips', value: S.dips },
+        { label: 'Side', value: S.side },
+        { label: 'Fiber', value: S.fiber },
+      ])}
+      ${totalRow('Payment Received', S.totalHst)}
+      <div>${MANAGE_BTN.replace('Manage Subscription →', 'Manage Subscription')}</div>
+    `),
+  },
+  {
+    id: 'renewal-deferred',
+    group: 'Billing & Renewals',
+    name: 'Renewal with Scheduled Plan Change',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Your Plan has been updated',
+    trigger: 'paymentKind weekly_renewal with pending deferred plan changes for next delivery',
+    source: 'lib/email-templates/subscription-plan-updated.ts (via sendCustomerSubscriptionRenewalWithScheduledChangesEmail)',
+    note: 'Uses the Plan Updated template instead of Renewal Confirmed when deferred changes exist.',
+    html: shellSimple(planUpdatedBody('Monday, March 17, 2026', '12 meals', '5 x Lemon Herb, 4 x Shawarma, 3 x Buffalo', '2 packs', '3 x Garlic', 'Wednesday, March 19, 2026', 'Garlic Rice', 'No Fiber')),
+  },
+  {
+    id: 'admin-renewal',
+    group: 'Billing & Renewals',
+    name: 'Admin — Subscription Renewal',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `Subscription Renewal: ${S.fullName} - ${S.totalHst}`,
+    trigger: 'Same weekly renewal payment as Renewal Confirmed (paymentKind weekly_renewal)',
+    source: 'lib/email.ts → sendAdminSubscriptionRenewalEmail',
+    html: adminShell('#22c55e', 'Subscription Renewed', `<div style="background:#dcfce7;border-left:4px solid #22c55e;padding:12px 16px;margin-bottom:20px;"><p style="margin:0;color:#166534;font-weight:600;">Recurring charge successful</p></div>`, adminRenewalBody(), `Renewal processed at ${S.nextBilling}`),
+  },
+  {
+    id: 'payment-failed-customer',
+    group: 'Billing & Renewals',
+    name: 'Payment Failed (Customer)',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Action required: subscription payment failed',
+    trigger: 'invoice.payment_failed on renewal (or resume retry). Sub stays ACTIVE with payment-failed notice; invoice kept open; app retries (not Stripe Smart Retries). Comms copy refresh is a later scope.',
+    source: 'lib/email.ts → sendCustomerSubscriptionPaymentFailedEmail',
+    html: shell(`
+      <p style="margin:0 0 16px;">Hi ${S.firstName},</p>
+      <p style="margin:0 0 16px;">We could not charge your saved payment method for your weekly subscription renewal.</p>
+      ${alertBox('<strong>Reason:</strong> Your card was declined.')}
+      <p style="margin:0 0 16px;">Your subscription is marked <strong>FAILED</strong> and <strong>no delivery will be prepared</strong> for this billing week until payment succeeds.</p>
+      <p style="margin:0 0 16px;">Please update your payment method, then tap <strong>Resume Subscription</strong> in your dashboard.</p>
+      <div>${MANAGE_BTN.replace('Manage Subscription →', 'Update payment method')}</div>
+    `),
+  },
+  {
+    id: 'payment-failed-admin',
+    group: 'Billing & Renewals',
+    name: 'Payment Failed — Renewal (Admin)',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `Payment Failed (Renewal Payment Failed): ${S.fullName}`,
+    trigger: 'invoice.payment_failed on renewal — open invoice, auto_advance false, ACTIVE + fail metadata',
+    source: 'lib/email.ts → sendAdminSubscriptionPaymentFailedEmail',
+    html: adminShell('#dc2626', 'Subscription Payment Failed', `<div style="background:#fee2e2;border-left:4px solid #dc2626;padding:12px 16px;margin-bottom:20px;"><p style="margin:0;color:#991b1b;font-weight:600;">Renewal Payment Failed — no delivery this week until paid (app-owned retries)</p></div>`, adminPaymentFailedBody(), ''),
+  },
+  {
+    id: 'payment-failed-customer-resume',
+    group: 'Billing & Renewals',
+    name: 'Payment Failed — Resume Retry (Customer)',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Payment still could not be completed',
+    trigger: 'Customer resumes subscription but payment retry fails',
+    source: 'lib/email.ts → sendCustomerSubscriptionPaymentFailedEmail (isResumeRetry)',
+    html: shell(`
+      <p style="margin:0 0 16px;">Hi ${S.firstName},</p>
+      <p style="margin:0 0 16px;">We tried to charge your saved payment method again when you resumed, but the payment still could not be completed.</p>
+      ${alertBox('<strong>Reason:</strong> Your card was declined.')}
+      <p style="margin:0 0 16px;">Your subscription is marked <strong>FAILED</strong> and <strong>no delivery will be prepared</strong> for this billing week until payment succeeds.</p>
+      <p style="margin:0 0 16px;">Please update your payment method, then tap <strong>Resume Subscription</strong> in your dashboard.</p>
+      <div>${MANAGE_BTN.replace('Manage Subscription →', 'Update payment method')}</div>
+    `),
+  },
+  {
+    id: 'payment-failed-admin-resume',
+    group: 'Billing & Renewals',
+    name: 'Payment Failed — Resume Retry (Admin)',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `Payment Failed (Resume Retry Failed): ${S.fullName}`,
+    trigger: 'Customer resumes subscription but payment retry fails',
+    source: 'lib/email.ts → sendAdminSubscriptionPaymentFailedEmail (resume_retry)',
+    html: adminShell('#dc2626', 'Subscription Payment Failed', `<div style="background:#fee2e2;border-left:4px solid #dc2626;padding:12px 16px;margin-bottom:20px;"><p style="margin:0;color:#991b1b;font-weight:600;">Resume Retry Failed — no delivery this week until paid</p></div>`, adminPaymentFailedBody(), ''),
+  },
+  {
+    id: 'flavor-updated',
+    group: 'Subscription Updates',
+    name: 'Flavor Updated',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Your flavors have been updated.',
+    trigger: 'Customer updates flavors in /manage',
+    source: 'lib/email-templates/subscription-flavor-updated.ts',
+    html: shellSimple(`
+      <p style="margin:0 0 16px;">Hi ${S.firstName},</p>
+      <p style="margin:0 0 8px;">Updated flavors for <strong>Monday, March 10</strong>:</p>
+      ${flavorRows('5 x Lemon Herb<br>3 x Shawarma<br>2 x Buffalo')}
+      ${splitRows([
+        { label: 'Side', value: S.side },
+        { label: 'Fiber', value: S.fiber },
+      ])}
+      <div style="margin-top:16px;">${MANAGE_BTN}</div>
+    `),
+  },
+  {
+    id: 'flavor-admin',
+    group: 'Subscription Updates',
+    name: 'Flavor Change (Admin)',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `Flavor Change: ${S.fullName} (${S.email})`,
+    trigger: 'Same flavor update',
+    source: 'lib/email.ts → sendFlavorChangeAdminEmail',
+    html: shell(`
+      <p style="margin:0 0 12px;"><strong>Customer:</strong> ${S.fullName} (${S.email})</p>
+      <p style="margin:0 0 12px;"><strong>Delivery Date:</strong> ${S.deliveryDate}</p>
+      <p style="margin:0 0 12px;"><strong>Meals:</strong> ${S.meals} per week</p>
+      <p style="margin:0 0 8px;"><strong>New Flavor Selections:</strong></p>
+      ${flavorRows('Lemon Herb x5, Shawarma x3, Buffalo x2')}
+      ${splitRows([
+        { label: 'Pita', value: S.pitaAdmin },
+        { label: 'Dips', value: S.dips },
+        { label: 'Side', value: S.side },
+        { label: 'Fiber', value: S.fiber },
+        { label: 'Pricing', value: S.totalHst + '/week (with HST)' },
+      ])}
+      <p style="margin:12px 0 0;font-size:14px;color:' + MUTED + ';">${S.recordedAt}</p>
+    `, { headline: 'Flavor Change Notification' }),
+  },
+  {
+    id: 'plan-updated',
+    group: 'Subscription Updates',
+    name: 'Plan Updated',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Your Plan has been updated',
+    trigger: 'Customer changes meal count, pita, dips, side, or fiber',
+    source: 'lib/email-templates/subscription-plan-updated.ts',
+    html: shellSimple(planUpdatedBody(S.deliveryDate, `${S.meals} meals`, S.flavorsInline, '1 pack', S.dips, S.nextBilling, S.side, S.fiber)),
+  },
+  {
+    id: 'plan-admin',
+    group: 'Subscription Updates',
+    name: 'Plan Change (Admin)',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `Plan Change: ${S.fullName} (${S.email})`,
+    trigger: 'Same plan change (meals / pita / dips / side / fiber)',
+    source: 'lib/email.ts → sendPlanChangeAdminEmail',
+    html: shell(`
+      ${splitRows([
+        { label: 'Customer', value: S.fullName },
+        { label: 'Previous Plan', value: '8 meals/week' },
+        { label: 'New Plan', value: S.meals + ' meals/week' },
+        { label: 'Previous Pita', value: 'None' },
+        { label: 'New Pita', value: S.pitaAdmin },
+        { label: 'Previous Dips', value: '1 x Garlic' },
+        { label: 'New Dips', value: S.dips },
+        { label: 'Previous Side', value: 'No Sides' },
+        { label: 'New Side', value: S.side },
+        { label: 'Previous Fiber', value: 'No Fiber' },
+        { label: 'New Fiber', value: S.fiber },
+        { label: 'Previous Pricing', value: '$98.00/week (with HST)' },
+        { label: 'New Pricing', value: S.totalHst + '/week (with HST)' },
+      ])}
+      <p style="margin:12px 0 8px;"><strong>Flavors:</strong></p>
+      ${flavorRows(S.flavorsAdmin)}
+      <p style="margin:12px 0 0;"><strong>First delivery with new plan:</strong> Monday, March 17, 2026</p>
+      <p style="margin:12px 0 0;font-size:14px;color:' + MUTED + ';">${S.recordedAt}</p>
+    `, { headline: 'Plan Change Notification' }),
+  },
+  {
+    id: 'address-change',
+    group: 'Subscription Updates',
+    name: 'Address Change Alert',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `Address Change: ${S.fullName}`,
+    trigger: 'Customer updates delivery address',
+    source: 'lib/email.ts → sendAddressChangeNotification',
+    html: shell(`
+      <p style="margin:0 0 12px;"><strong>Customer:</strong> ${S.fullName} (${S.email})</p>
+      <p style="margin:0 0 12px;"><strong>Previous Address:</strong> ${S.fullAddress}</p>
+      <p style="margin:0 0 12px;"><strong>New Address:</strong> ${S.newFullAddress}</p>
+      <p style="margin:0;font-size:14px;color:' + MUTED + ';">${S.recordedAt}</p>
+    `, { headline: 'Customer Address Change' }),
+  },
+  {
+    id: 'pre-billing',
+    group: 'Scheduled Emails',
+    name: 'Pre-Billing Flavor Reminder',
+    audience: 'customer',
+    timing: 'scheduled',
+    subject: 'Review your upcoming order',
+    trigger: 'Primary: schedule ~24h before next charge at payment/resume (Tue 11:59 PM ET when T=Wed). Backup: Sunday email sweep after meal-order cutoff (Sun 3:00 PM ET)',
+    source: 'lib/email-templates/subscription-pre-billing-flavor-reminder.ts',
+    html: shellSimple(`
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Hi ${S.firstName},</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">You trust us with your protein goals. We take that seriously,</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Your order processes on <strong>${S.nextBilling}</strong>.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;"><strong>Upcoming order:</strong> ${S.deliveryDate} delivery</p>
+      ${preBillingOrderSummary()}
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:16px 0;">You have until <strong>${S.flavorCutoff}</strong> to update your flavor selections.</p>
+      <p style="color:#4b5563;font-size:15px;margin:0 0 24px 0;">Missed the cut-off? Email <a href="mailto:support@skewerbros.com" style="color:#B31E23;">support@skewerbros.com</a>.</p>
+      <div>${MANAGE_BTN.replace('Manage Subscription →', 'Manage your meals →')}</div>
+    `),
+  },
+  {
+    id: 'pause-resume-reminder',
+    group: 'Scheduled Emails',
+    name: 'Pause Resume Reminder',
+    audience: 'customer',
+    timing: 'scheduled',
+    subject: 'Your subscription is set to resume tomorrow.',
+    trigger: 'Scheduled when customer sets a finite pause resume date — sends ~24h before resume charge (not Sunday cron)',
+    source: 'lib/email-templates/subscription-pause-resume-reminder.ts',
+    html: shellSimple(`
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Hi ${S.firstName},</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">Your subscription is scheduled to resume <strong>tomorrow</strong> on <strong>Wednesday, 12th March at 11:59 pm ET</strong>.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 16px 0;">If you'd like to update your plan, change your flavours, or extend your pause, please do so before then.</p>
+      <div style="margin:0;">${MANAGE_BTN}</div>
+    `),
+  },
+  {
+    id: 'monday-reminder',
+    group: 'Scheduled Emails',
+    name: 'Monday Delivery Reminder',
+    audience: 'customer',
+    timing: 'scheduled',
+    subject: 'Your SKEWERBROS Delivery is Scheduled for Today.',
+    trigger: 'Scheduled when paid order is placed (plus Sunday late-order sweep) → sends Monday 11:00 AM ET on delivery day',
+    source: 'lib/email-templates/monday-delivery-reminder.ts',
+    note: 'Body hardcodes 5:30–10:00 PM. Most other emails / config use 5:30–10:30 PM.',
+    html: shell(`
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin-top:0;">Hello ${S.firstName},</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">Your SKEWERBROS delivery is scheduled to arrive today between <strong>5:30–10:00 PM</strong>.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">All meals are delivered in insulated bags with ice packs to maintain a continuous cold chain throughout transit.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">The bags are part of our circular and sustainable delivery system. After collection, each bag is thoroughly sanitized and returned to circulation.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">Please keep your insulated bag available during your next delivery so it can be collected and reused.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">Our meals are packed in recyclable CPET trays that are microwave safe and oven proofed, withstanding temperatures from <strong>−40°F to 390°F</strong>. Simply peel back one corner slightly before heating.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">For best results reheat using an air fryer or oven. For storage beyond one week, we recommend freezing your meals.</p>
+      <div style="margin:16px 0 24px 0;">${MANAGE_BTN.replace('Manage Subscription →', 'View FAQ →')}</div>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">You'll receive a live tracking link once your driver is about an hour away, and they'll also give you a call before arriving.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:0;">Thank you for trusting us with your protein.</p>
+    `),
+  },
+  {
+    id: 'post-delivery-feedback',
+    group: 'Scheduled Emails',
+    name: 'Post-Delivery Feedback',
+    audience: 'customer',
+    timing: 'scheduled',
+    subject: 'How did the meals land?',
+    trigger: 'Scheduled when order placed → sends Wednesday 9:00 AM ET (2 days after delivery Monday)',
+    source: 'lib/scheduled-emails.ts → sendPostDeliveryFeedbackEmail',
+    html: shell(`
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin-top:0;">Hi ${S.firstName},</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">Quick check-in on the chicken breasts.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">As we scale, our priority is simple: quality must stay uncompromising. Did everything land the way it should, in terms of flavour, portions, overall experience?</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">If anything felt off, even slightly, please do flag it for us. Your feedback helps us keep the standard exactly where it belongs.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:0;">Thank you for trusting us with your protein.</p>
+    `),
+  },
+  {
+    id: 'billing-schedule-change',
+    group: 'Marketing & Other',
+    name: 'Billing Schedule Change',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'Change of Schedules.',
+    trigger: 'Admin bulk-sends from admin panel (labels passed as params)',
+    source: 'lib/email-templates/billing-schedule-change.ts',
+    note: 'Preview below is a historical sample. Live template injects fromBillingTrigger / billingCutoffLabel / flavorCutoffLabel. Current default flavor cutoff = Thursday 11:59 PM ET (T+1). Meal-order cutoff = Sunday 3:00 PM ET.',
+    html: shell(`
+      <p style="color:#1f2937;font-size:16px;line-height:1.6;margin-top:0;">Hi,</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">You're receiving this email because you're an active SKEWERBROS subscriber.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">We wanted to let you know that we're shifting our billing trigger from <strong>Sunday 6:00 PM</strong> to <strong>Wednesday 11:59 PM</strong>. This gives us more time to plan ahead, lock in ingredient orders, minimize food wastage, and ensure everything is prepared as fresh as possible as we continue to scale.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;">Flavor selection cut-off will now be <strong>Thursday 11:59 PM</strong>. That said, if you ever miss the deadline to update your flavor preferences, no stress, just reach out and we'll be sure to accommodate any flavor requests.</p>
+      <p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:0;">Thank you for trusting us with your protein.</p>
+    `),
+  },
+  {
+    id: 'customer-broadcast',
+    group: 'Marketing & Other',
+    name: 'Customer Broadcast',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: '(Custom — admin composes)',
+    trigger: 'Admin sends from Customer Emails panel to filtered segments',
+    source: 'lib/email-templates/customer-broadcast.ts',
+    note: 'Supports {{customerFirstName}} and {{customerName}} merge tags. Markdown-like formatting: **bold**, *italic*, - bullet lists.',
+    html: shell(`
+      <div style="color:#4b5563;font-size:16px;line-height:1.6;">
+        <p>Hi ${S.firstName},</p>
+        <p>We're excited to share some news about our upcoming menu additions!</p>
+        <ul style="margin:0 0 1em;padding-left:1.5em;list-style-type:disc;"><li style="margin-bottom:.25em;">New Buffalo flavor launching next week</li><li style="margin-bottom:.25em;">Insulated bag return reminder</li></ul>
+        <p>Thank you for being part of the SkewerBros family.</p>
+      </div>
+    `),
+  },
+  {
+    id: 'catering-admin',
+    group: 'Marketing & Other',
+    name: 'Catering Inquiry (Admin)',
+    audience: 'admin',
+    timing: 'immediate',
+    subject: `Catering Inquiry: Office Catering - ${S.fullName}`,
+    trigger: 'Catering form submission at /catering',
+    source: 'app/api/catering/route.ts',
+    html: shell(`
+      <table style="width:100%;border-collapse:collapse;">
+        <tr><td style="padding:12px 0;border-bottom:1px solid rgba(26,26,26,0.12);font-weight:600;width:140px;">Name:</td><td style="padding:12px 0;border-bottom:1px solid rgba(26,26,26,0.12);">${S.fullName}</td></tr>
+        <tr><td style="padding:12px 0;border-bottom:1px solid rgba(26,26,26,0.12);font-weight:600;">Company:</td><td style="padding:12px 0;border-bottom:1px solid rgba(26,26,26,0.12);">${S.company}</td></tr>
+        <tr><td style="padding:12px 0;border-bottom:1px solid rgba(26,26,26,0.12);font-weight:600;">Email:</td><td style="padding:12px 0;border-bottom:1px solid rgba(26,26,26,0.12);"><a href="mailto:${S.email}" style="color:#B31E23;">${S.email}</a></td></tr>
+        <tr><td style="padding:12px 0;border-bottom:1px solid rgba(26,26,26,0.12);font-weight:600;">Phone:</td><td style="padding:12px 0;border-bottom:1px solid rgba(26,26,26,0.12);"><a href="tel:${S.phone}" style="color:#B31E23;">${S.phone}</a></td></tr>
+        <tr><td style="padding:12px 0;border-bottom:1px solid rgba(26,26,26,0.12);font-weight:600;">Service Type:</td><td style="padding:12px 0;border-bottom:1px solid rgba(26,26,26,0.12);">Office Catering</td></tr>
+        <tr><td style="padding:12px 0;font-weight:600;vertical-align:top;">Details:</td><td style="padding:12px 0;">Looking to cater lunch for 30 people on March 15. Request: ${S.meals} meals, ${S.flavorsInline}, ${S.pitaAdmin}, dips ${S.dips}. Delivery to ${S.fullAddress}.</td></tr>
+      </table>
+      <p style="margin:16px 0 0;font-size:14px;color:' + MUTED + ';">This inquiry was submitted via the SKEWERBROS website.</p>
+    `, { headline: 'New Catering Inquiry' }),
+  },
+  {
+    id: 'catering-customer',
+    group: 'Marketing & Other',
+    name: 'Catering Confirmation',
+    audience: 'customer',
+    timing: 'immediate',
+    subject: 'SKEWERBROS Catering - We Received Your Request!',
+    trigger: 'Catering form submission',
+    source: 'app/api/catering/route.ts',
+    html: shell(`
+      <p style="margin:0 0 16px;">We've received your catering inquiry for <strong>Office Catering</strong> and will get back to you within 24 hours.</p>
+      <p style="margin:0 0 8px;"><strong>What happens next?</strong></p>
+      <p style="margin:0 0 8px;">Our team will review your request.</p>
+      <p style="margin:0 0 8px;">We'll prepare a custom quote for your event.</p>
+      <p style="margin:0 0 16px;">You'll hear from us within 24 hours.</p>
+      <p style="margin:0;">Questions? Reply to this email or call us at ${S.phone}.</p>
+    `),
+  },
+];
+
+const CHROME = {
+  'order-confirmation': { eyebrow: 'Order confirmed', headline: 'Your protein is locked in.' },
+  'order-confirmation-onetime': { eyebrow: 'Order confirmed', headline: 'Your protein is locked in.' },
+  'cart-abandonment': { eyebrow: 'Checking in', headline: 'Better protein starts here.' },
+  'verification-code': { eyebrow: 'Verification', headline: 'Your Verification Code' },
+  'subscription-paused': { eyebrow: 'Subscription paused', headline: 'Your subscription has been paused.' },
+  'subscription-paused-indefinite': { eyebrow: 'Subscription paused', headline: 'Your subscription has been paused.' },
+  'pause-extended': { eyebrow: 'Return date', headline: 'Your return date has been updated.' },
+  'subscription-resumed': { eyebrow: 'Subscription resumed', headline: 'Your subscription has been resumed.' },
+  'subscription-resumed-after-trigger': { eyebrow: 'Subscription resumed', headline: 'Your subscription has been resumed.' },
+  'subscription-cancelled': { eyebrow: 'Subscription cancelled', headline: 'Your subscription has been cancelled.' },
+  'welcome-back': { headline: 'Welcome Back!' },
+  'renewal-confirmed': { eyebrow: 'Subscription renewed', headline: 'Your order for ' + S.deliveryDateShort + ' is confirmed.' },
+  'renewal-deferred': { eyebrow: 'Plan updated', headline: 'Your meal plan has been successfully updated.' },
+  'payment-failed-customer': { eyebrow: 'Action needed · Payment', headline: "We couldn't process your renewal." },
+  'payment-failed-customer-resume': { eyebrow: 'Action needed · Payment', headline: "We couldn't process your renewal." },
+  'flavor-updated': { eyebrow: 'Flavors updated', headline: 'Your flavors have been updated.' },
+  'plan-updated': { eyebrow: 'Plan updated', headline: 'Your meal plan has been successfully updated.' },
+  'pre-billing': { eyebrow: 'Upcoming order', headline: 'Review your upcoming order.' },
+  'pause-resume-reminder': { eyebrow: 'Resuming tomorrow', headline: 'Your subscription is set to resume tomorrow.' },
+  'monday-reminder': { eyebrow: 'Delivery today', headline: 'Your delivery is scheduled for today.' },
+  'post-delivery-feedback': { eyebrow: 'After delivery', headline: 'How did the meals land?' },
+  'billing-schedule-change': { eyebrow: 'Schedule change', headline: 'Change of schedules.' },
+  'catering-customer': { eyebrow: 'Catering', headline: 'Thanks for reaching out, ' + S.firstName + '!' },
+};
+
+EMAILS.forEach((email) => {
+  if (email.html.indexOf('<!--CHROME-->') === -1) return;
+  const chrome = CHROME[email.id];
+  const eye = chrome && chrome.eyebrow ? eyebrow(chrome.eyebrow) : '';
+  const title = chrome && chrome.headline ? headline(chrome.headline) : '';
+  email.html = email.html.replace('<!--CHROME-->', eye + title);
+});
+
+const navList = document.getElementById('nav-list');
+const detail = document.getElementById('email-detail');
+let currentId = null;
+const groups = {};
+
+EMAILS.forEach((e) => {
+  if (!groups[e.group]) groups[e.group] = [];
+  groups[e.group].push(e);
+});
+
+function badgeClass(audience) {
+  if (audience === 'admin') return 'badge-admin';
+  if (audience === 'customer') return 'badge-customer';
+  return '';
+}
+
+function renderNav(filter = '') {
+  navList.innerHTML = '';
+  const q = filter.toLowerCase();
+  Object.keys(groups).forEach((group) => {
+    const items = groups[group].filter(
+      (e) =>
+        !q ||
+        e.name.toLowerCase().includes(q) ||
+        e.subject.toLowerCase().includes(q) ||
+        e.trigger.toLowerCase().includes(q),
+    );
+    if (!items.length) return;
+    const label = document.createElement('div');
+    label.className = 'group-label';
+    label.textContent = group;
+    navList.appendChild(label);
+    items.forEach((e) => {
+      const a = document.createElement('a');
+      a.className = 'nav-item' + (e.id === currentId ? ' active' : '');
+      a.dataset.id = e.id;
+      const badge =
+        e.timing === 'scheduled'
+          ? '<span class="badge badge-scheduled">scheduled</span>'
+          : `<span class="badge ${badgeClass(e.audience)}">${e.audience}</span>`;
+      a.innerHTML = e.name + badge;
+      a.addEventListener('click', () => showEmail(e.id));
+      navList.appendChild(a);
+    });
+  });
+}
+
+function showEmail(id) {
+  currentId = id;
+  const e = EMAILS.find((x) => x.id === id);
+  if (!e) return;
+  location.hash = id;
+  renderNav(document.getElementById('search').value);
+
+  detail.innerHTML = `
+    <h2>${e.name}</h2>
+    <p class="subject-line">Subject: "${e.subject}"</p>
+    ${e.note ? `<div class="flow-section"><h3>Note</h3><p>${e.note}</p></div>` : ''}
+    <div class="meta-grid">
+      <div class="meta-card"><label>Audience</label><span>${e.audience === 'admin' ? 'Admin (support@skewerbros.com)' : 'Customer'}</span></div>
+      <div class="meta-card"><label>Timing</label><span>${e.timing === 'scheduled' ? 'Scheduled via Resend' : 'Immediate'}</span></div>
+      <div class="meta-card"><label>Trigger</label><span>${e.trigger}</span></div>
+      <div class="meta-card"><label>Source</label><span style="font-size:12px;font-family:monospace;">${e.source}</span></div>
+    </div>
+    <div class="preview-wrap">
+      <div class="preview-toolbar"><span>Email Preview (sample data)</span><span>Scroll inside ↓</span></div>
+      <iframe class="preview-frame" srcdoc="${e.html.replace(/"/g, '&quot;')}" onload="this.style.height=this.contentDocument.documentElement.scrollHeight+'px'"></iframe>
+    </div>
+  `;
+}
+
+document.getElementById('search').addEventListener('input', (ev) => renderNav(ev.target.value));
+document.getElementById('email-count').textContent = EMAILS.length;
+renderNav();
+if (location.hash) showEmail(location.hash.slice(1));
+else showEmail(EMAILS[0].id);
+</script>
+</body>
+</html>
